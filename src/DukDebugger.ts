@@ -233,7 +233,7 @@ class SourceFile {
     public srcMapPath: string;
     public srcMap: SourceMap;
 
-    constructor() {}
+    constructor() { }
 
     // Generated to original source ( ie: JS -> TS )
     public generated2Source(line: number): SourceFilePosition {
@@ -457,7 +457,7 @@ export class DukDebugSession extends DebugSession {
         this._dukProto.on(DukEvent[DukEvent.nfy_throw], (e: DukThrowNotification) => {
             this._expectingBreak = "Exception";
 
-            const sendEvent = function() {
+            const sendEvent = function () {
                 const sourceFile: SourceFile = this.mapSourceFile(e.fileName);
                 const source: Source = sourceFile
                     ? new Source(sourceFile.name, sourceFile.path)
@@ -528,6 +528,10 @@ export class DukDebugSession extends DebugSession {
                 this.logToClient(`Protocol ID: ${version.id}\n`);
 
                 if (version.major === 2 || (version.major === 1 && version.minor >= 5)) {
+                    if (this._args.sourceMaps) {
+                        this._sourceMaps = new SourceMaps(this._outDir);
+                    }
+
                     this.initDukDbgProtocol(conn, buf);
                     this.finalizeInit(response);
                 } else {
@@ -550,14 +554,10 @@ export class DukDebugSession extends DebugSession {
     private finalizeInit(response: DebugProtocol.Response): void {
         this.dbgLog("Finalized Initialization.");
 
-        if (this._args.sourceMaps) {
-            this._sourceMaps = new SourceMaps(this._outDir);
-        }
-
         // Make sure that any breakpoints that were left set in
         // case of a broken connection are cleared
         this.removeAllTargetBreakpoints()
-            .catch(() => {})
+            .catch(() => { })
             .then(() => {
                 // Let the front end know we're done initializing
                 this.sendResponse(response);
@@ -574,7 +574,7 @@ export class DukDebugSession extends DebugSession {
                     });
                 }
             })
-            .catch(() => {});
+            .catch(() => { });
     }
 
     //-----------------------------------------------------------
@@ -712,17 +712,17 @@ export class DukDebugSession extends DebugSession {
 
         this.dbgLog("Clearing breakpoints on target.");
         this.removeAllTargetBreakpoints()
-            .catch(() => {})
+            .catch(() => { })
             .then(() => {
                 // At this point the remote socket may have been closed.
                 const isConnected = this._dukProto.isConnected;
 
                 ((isConnected && this._dukProto.requestDetach()) || Promise.resolve())
-                    .catch(() => {})
+                    .catch(() => { })
                     .then(() => doDisconnect()); // This will be redundant if the detach
                 // response was received succesfully.
             })
-            .catch(() => {});
+            .catch(() => { });
     }
 
     //-----------------------------------------------------------
@@ -811,7 +811,7 @@ export class DukDebugSession extends DebugSession {
 
                     removedBPs.push(bp);
                 })
-                .catch(() => {}) // Simply don't add the breakpoint if it failed.
+                .catch(() => { }) // Simply don't add the breakpoint if it failed.
                 .then(() => {
                     // Remove the next one
                     return doRemoveBreakpoints(i + 1);
@@ -856,7 +856,7 @@ export class DukDebugSession extends DebugSession {
                         //this.dbgLog( "BRK: " + r.index + " ( " + bp.line + ")");
                         addedBPs.push(bp);
                     })
-                    .catch(() => {}) // Simply don't add the breakpoint if it failed.
+                    .catch(() => { }) // Simply don't add the breakpoint if it failed.
                     .then(() => {
                         // Go to the next one
                         return doAddBreakpoints(i + 1);
@@ -866,7 +866,7 @@ export class DukDebugSession extends DebugSession {
 
         doRemoveBreakpoints(0)
             .then(() => doAddBreakpoints(0))
-            .catch(e => {})
+            .catch(e => { })
             .then(() => {
                 // Send response
                 addedBPs = persistBPs.concat(addedBPs);
@@ -1081,10 +1081,10 @@ export class DukDebugSession extends DebugSession {
                     let srcPos: SourceFilePosition = srcFile
                         ? srcFile.generated2Source(line)
                         : {
-                              path: entry.fileName,
-                              fileName: entry.fileName,
-                              line: line
-                          };
+                            path: entry.fileName,
+                            fileName: entry.fileName,
+                            line: line
+                        };
 
                     // Save stack frame to the state
                     let frame = new DukStackFrame(
@@ -1202,7 +1202,7 @@ export class DukDebugSession extends DebugSession {
 
     //-----------------------------------------------------------
     private getVariableName(argName: string, properties: PropertySet): string {
-        let getVariableNamePrefix = function(properties: PropertySet): Array<string> {
+        let getVariableNamePrefix = function (properties: PropertySet): Array<string> {
             if (!properties.parent) {
                 return [];
             }
@@ -1869,7 +1869,7 @@ export class DukDebugSession extends DebugSession {
                     return Promise.resolve(propSet);
                 });
             })
-            .catch(() => {})
+            .catch(() => { })
             .then(() => {
                 return Promise.resolve(propSet);
             });
@@ -2064,7 +2064,7 @@ export class DukDebugSession extends DebugSession {
     //-----------------------------------------------------------
     private unmapSourceFile(path: string): SourceFile {
         this.dbgLog(`[unmapSourceFile] Unmapping file: ${path}`);
-        path = Path.normalize(path);
+        path = this.normPath(Path.normalize(path)); 
         let name = Path.basename(path);
 
         // Grab the relative path under the source root if this is located there,
