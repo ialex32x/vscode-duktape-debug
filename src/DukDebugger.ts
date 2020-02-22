@@ -2041,11 +2041,12 @@ export class DukDebugSession extends DebugSession {
                     if (!Path.isAbsolute(srcPath)) {
                         // According to https://sourcemaps.info/spec.html#h.75yo6yoyk7x5 :
                         // if the sources are not absolute URLs after prepending of the “sourceRoot”, the sources are resolved relative to the SourceMap
-                        srcPath = Path.resolve(Path.dirname(this.normPath(Path.join(this._outDir, name))), srcPath);
+                        srcPath = Path.resolve(Path.dirname(Path.join(this._outDir, name)), srcPath);
                     }
 
-                    srcPath = Path.normalize(srcPath);
+                    srcPath = this.normPath(Path.normalize(srcPath));
                     this._sourceToGen[srcPath] = src;
+                    this.dbgLog(`[mapSourceFile] sourceToGen ${srcPath}`);
                 }
             }
         } catch (err) {

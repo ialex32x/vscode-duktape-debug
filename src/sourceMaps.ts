@@ -397,6 +397,8 @@ export class SourceMap {
             // if path starts with a drive letter convert path to a file:/// url so that the source-map library can handle it
             if (/^[a-zA-Z]\:\//.test(path)) {
                 path = "file:///" + path;
+                // const dl = path[0];
+                // path = path.replace(dl, dl.toLowerCase());
             }
 
             // if path contains upper case drive letter convert to lower case
@@ -451,6 +453,13 @@ export class SourceMap {
     private absolutePath(path: string): string {
         if (!util.isAbsolute(path)) {
             let candidatePath = util.join(this._sourcemapLocation, path);
+            const prefix = "file://";
+            if (candidatePath.indexOf(prefix) === 0) {
+                candidatePath = candidatePath.substr(prefix.length);
+                if (/^\/[a-zA-Z]\:\//.test(candidatePath)) {
+                    candidatePath = candidatePath.substr(1);
+                }
+            }
             if (FS.existsSync(candidatePath)) {
                 path = candidatePath;
             } else {
@@ -461,13 +470,6 @@ export class SourceMap {
                         break;
                     }
                 }
-            }
-        }
-        const prefix = "file://";
-        if (path.indexOf(prefix) === 0) {
-            path = path.substr(prefix.length);
-            if (/^\/[a-zA-Z]\:\//.test(path)) {
-                path = path.substr(1);
             }
         }
         
